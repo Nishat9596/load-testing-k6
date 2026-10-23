@@ -1,0 +1,35 @@
+name: Load Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      profile:
+        description: "Load profile (smoke, load or stress)"
+        default: load
+
+jobs:
+  k6:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: grafana/setup-k6-action@v1
+      - name: Start the chat API
+        run: |
+          node api/chat-server.js &
+          npx --yes wait-on http://localhost:3000/health
+      - name: Run k6 (fails the build if any threshold fails)
+        run: |
+          mkdir -p results
+          k6 run -e PROFILE=${{ github.event.inputs.profile || 'load' }} scripts/chat-load-test.js
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: k6-results
+          path: results/
