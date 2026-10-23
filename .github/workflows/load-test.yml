@@ -22,8 +22,8 @@ jobs:
       - uses: grafana/setup-k6-action@v1
       - name: Start the chat API
         run: |
-          node api/chat-server.js &
-          npx --yes wait-on http://localhost:3000/health
+          nohup node api/chat-server.js > server.log 2>&1 &
+          npx --yes wait-on -t 30000 http-get://localhost:3000/health
       - name: Run k6 (fails the build if any threshold fails)
         run: |
           mkdir -p results
