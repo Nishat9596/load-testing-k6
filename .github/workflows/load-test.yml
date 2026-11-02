@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    - cron: "57 4 * * *"   # every day, 08:57 Dubai time
   workflow_dispatch:
     inputs:
       profile:
